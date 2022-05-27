@@ -1,21 +1,61 @@
 from django import forms
 
-def metafield(key):
-    widget = {
-        "phone" : forms.TextInput(attrs={
-            "class" : "phone",
-            "type" : "tel",
-            "placeholder" : "Телефон"
-        })
-    }
+from blog.models import Blog, Tag
+# from .models import Tag
 
-    return widget["key"]
+class BlogForm(forms.ModelForm):
+    class Meta:
+        """ Cоздаем инпуты """
 
-class Register(forms.Form):
+        model = Blog
+        fields = ["title", "description", "tag"]
 
-    title = forms.CharField()
-    description = forms.CharField()
+        widgets = {
+            "title" : forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Title",
+            }),
 
+            "description": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Description",
+            }),
+
+            "tag" : forms.Select(attrs={
+                "class": "form-control",
+            })
+        }
+
+        labels = {
+            "title" : "",
+            "description" : "",
+        }
+
+    def cleaned(self):
+        """ Очищаем форму и проверяем на ошибки """
+        
+        title = self.cleaned_data["title"].lower()
+        description = self.cleaned_data["description"]
+
+        if title == "Запрещенное слово":
+            raise forms.ValidationError("Запрещенное слово")
+        
+        return {
+            "title": title,
+            "description": description,
+        }
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ["tag"]
+        
+        widgets = {
+            "tag": forms.TextInput(attrs={
+                "class": "form-control"
+            })
+        }
+        
 
 # initial = "undefined" - С помощью параметра initial можно установить значения по умолчанию.
 # Параметр help_text устанавливает подсказку рядом с полем ввода:
